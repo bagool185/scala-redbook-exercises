@@ -17,6 +17,33 @@ object List {
     case Cons(x, xs) => x * product(xs)
   }
 
+  def foldRight[A, B](list: List[A], neutralVal: B)(f: (A, B) => B): B =
+    list match {
+      case Nil => neutralVal
+      case Cons(head, tail) => f(head, foldRight(tail, neutralVal)(f))
+    }
+
+  def foldLeft[A, B](list: List[A], neutralVal: B)(f: (B, A) => B): B = 
+    list match {
+      case Nil => neutralVal
+      case Cons(head, tail) => f(foldLeft(tail, neutralVal)(f), head)
+    }
+
+  def foldRight2[A, B](list: List[A], neutralVal: B)(f: (A, B) => B): B = 
+    foldLeft(list, neutralVal)((x, y) => f(y,x))
+
+  def foldLeft2[A, B](list: List[A], neutralVal: B)(f: (B, A) => B): B = 
+    foldRight(list, neutralVal)((x, y) => f(y,x))
+
+  def sum2(list: List[Int]) = foldRight(list, 0)((x, y) => x + y)
+  def sum3(list: List[Int]) = foldLeft(list, 0)((x, y) => x + y)
+
+  def product2(list: List[Double]) = foldRight(list, 1.0)(_ * _)
+  def product3(list: List[Double]) = foldLeft(list, 1.0)(_ * _)
+
+  def length[A](list: List[A]): Int = foldRight(list, 0)((_, accumulator) => accumulator + 1) 
+  def length2[A](list: List[A]): Int = foldLeft(list, 0)((accumulator, _) => accumulator + 1) 
+
   // remove the first element of the list (the head)
   def tail[A](list: List[A]): List[A] = {
     drop(list, 1)
@@ -41,10 +68,11 @@ object List {
   }
 
   // remove elements from the list as long as the match the predicate
-  def dropWhile[A](list: List[A], predicate: A => Boolean): List[A] = {
+  // having dropWhile(list)(predicate) helps with type inferrence - basically dropWhile is curried
+  def dropWhile[A](list: List[A])(predicate: A => Boolean): List[A] = {
     list match {
       case Nil => Nil
-      case Cons(firstElement, rest) if (predicate(firstElement)) => dropWhile(rest, predicate)
+      case Cons(firstElement, rest) if (predicate(firstElement)) => dropWhile(rest)(predicate)
       case Cons(firstElement, rest) => list
     }
   }
@@ -87,7 +115,13 @@ object Chapter3 {
     println(List.setHead(List[Int](1, 2, 3, 4, 5), "a"))
     println(List.drop(List(1, 2, 3, 4, 5, 6), 5))
     println(List.drop(Cons(1, Nil), 2))
-    println(List.dropWhile(List(2, 4, 6, 3, 5, 6), (a: Int) => a % 2 == 0))
+    println(List.dropWhile(List(2, 4, 6, 3, 5, 6))(a => a % 2 == 0))
     println(List.init(List(1, 2, 3, 4)))
+    println(List.foldRight(List(1, 2, 3), Nil:List[Int])(Cons(_,_)))
+    println(List.length(List(1, 2, 3, 4)))
+    println(List.sum3(List(1, 2, 3, 4)))
+    println(List.product3(List(1, 2, 3, 4)))
+    println(List.length2(List(1, 2, 3, 4)))
+    println(List.append2(List(1, 2), List(3, 4)))
   }
 }
