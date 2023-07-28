@@ -84,6 +84,12 @@ object List {
       case Cons(firstElement, rest) => Cons(firstElement, append(rest, list2))
     }
 
+  def append2[A](list1: List[A], list2: List[A]): List[A] =
+    foldLeft(list1, list2)((accumulationList, element) => Cons(element, accumulationList))
+
+  def concatenate[A](lists: List[List[A]]): List[A] = 
+    foldLeft(lists, Nil: List[A])((accumulationList, element) => append(element, accumulationList))
+
   // return a copy of the list without the last element
   def init[A](list: List[A]): List[A] = 
     list match {
@@ -91,6 +97,22 @@ object List {
       case Cons(_, Nil) => Nil
       case Cons(head, tail) => Cons(head, init(tail))
     }
+
+  // write a function that transforms a list of integers by adding 1 to each element
+  def exercise3_16(list: List[Int]): List[Int] =
+    foldLeft(list, Nil: List[Int])((accumulationList, element) => Cons(element + 1, accumulationList))
+ 
+  // write a function that turns each value in a List[Double] into a String
+  def exercise3_17(list: List[Double]): String =
+    foldLeft(list, "")((accumulationList, element) => element.toString + " " + accumulationList)
+
+
+  def map[A, B](list: List[A])(f: A => B): List[B] = 
+    foldLeft(list, Nil: List[B])((accumulationList, element) => Cons(f(element), accumulationList))
+
+  def filter[A](list: List[A])(f: A => Boolean): List[A] = 
+    foldLeft(list, Nil: List[A])((accumulationList, element) => if (f(element)) Cons(element, accumulationList) else accumulationList)
+
 
   // variadic function (i.e. takes a variable number of arguments)
   def apply[A](as: A*): List[A] =
@@ -123,5 +145,12 @@ object Chapter3 {
     println(List.product3(List(1, 2, 3, 4)))
     println(List.length2(List(1, 2, 3, 4)))
     println(List.append2(List(1, 2), List(3, 4)))
+    println(List.concatenate(List(List(1, 2), List(3, 4))))
+    println(List.exercise3_16(List(1, 2, 3)))
+    println(List.exercise3_17(List(1.23, 2.5353, 3.2333)))
+    println(List.map(List(1, 2, 3))(el => el + 3))
+    println(List.filter(List(1, 2, 3))(el => el % 2 == 0))
+    // TODO - should return List(1, 1, 2, 2, 3, 3)
+    //    println(List.flatMap(List(1, 2, 3)(i => List(i, i))))
   }
 }
