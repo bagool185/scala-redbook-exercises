@@ -88,7 +88,7 @@ object List {
     foldLeft(list1, list2)((accumulationList, element) => Cons(element, accumulationList))
 
   def concatenate[A](lists: List[List[A]]): List[A] = 
-    foldLeft(lists, Nil: List[A])((accumulationList, element) => append(element, accumulationList))
+    foldLeft(lists, Nil: List[A])((accumulationList, element) => append2(element, accumulationList))
 
   // return a copy of the list without the last element
   def init[A](list: List[A]): List[A] = 
@@ -113,6 +113,41 @@ object List {
   def filter[A](list: List[A])(f: A => Boolean): List[A] = 
     foldLeft(list, Nil: List[A])((accumulationList, element) => if (f(element)) Cons(element, accumulationList) else accumulationList)
 
+  def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = 
+    foldLeft(list, Nil: List[B])((accumulationList, element) => append(f(element), accumulationList))
+  
+  def filter2[A](list: List[A])(f: A => Boolean): List[A] = 
+    flatMap(list)((elem) => if (f(elem)) List(elem) else Nil)
+
+  def addLists(list1: List[Int], list2: List[Int]): List[Int] = 
+    (list1, list2) match {
+      case (Nil, _) => Nil
+      case (_, Nil) => Nil
+      case (Cons(head1, tail1), Cons(head2, tail2)) => Cons(head1 + head2, addLists(tail1, tail2))
+    }
+
+  def zipWith[A, B, C](list1: List[A], list2: List[B])(f: (A, B) => C): List[C] = 
+    (list1, list2) match {
+      case (Nil, _) => Nil
+      case (_, Nil) => Nil
+      case (Cons(head1, tail1), Cons(head2, tail2)) => Cons(f(head1, head2), zipWith(tail1, tail2)(f))
+    }
+
+
+ def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    def startsWith(sup: List[A], sub: List[A]): Boolean = 
+      (sup, sub) match {
+        case (_, Nil) => true
+        case (Cons(head1, tail1), Cons(head2, tail2)) if head1 == head2 => startsWith(tail1, tail2)
+        case _ => false
+      }
+
+    sup match {
+      case Nil => sub == Nil
+      case _ if startsWith(sup, sub) => true
+      case Cons(_, tail) => hasSubsequence(tail, sub)
+    }
+ }
 
   // variadic function (i.e. takes a variable number of arguments)
   def apply[A](as: A*): List[A] =
@@ -133,8 +168,8 @@ object Chapter3 {
 
     println(List.tail(List(1, 2, 3, 4, 5)))
     println(List.tail(List()))
-    // why does this work idk lmao
     println(List.setHead(List[Int](1, 2, 3, 4, 5), "a"))
+    //println(List.setHead[Int](List[Int](1, 2, 3, 4, 5), "a"))
     println(List.drop(List(1, 2, 3, 4, 5, 6), 5))
     println(List.drop(Cons(1, Nil), 2))
     println(List.dropWhile(List(2, 4, 6, 3, 5, 6))(a => a % 2 == 0))
@@ -151,6 +186,14 @@ object Chapter3 {
     println(List.map(List(1, 2, 3))(el => el + 3))
     println(List.filter(List(1, 2, 3))(el => el % 2 == 0))
     // TODO - should return List(1, 1, 2, 2, 3, 3)
-    //    println(List.flatMap(List(1, 2, 3)(i => List(i, i))))
+    println(List.flatMap(List(1, 2, 3))(i => List(i, i)))
+    println(List.filter2(List(1, 2, 3))(el => el % 2 == 0))
+    println(List.addLists(List(1, 2, 3), List(2, 3, 4)))
+    println(List.zipWith[Int, Int, Int](List(1, 2, 3), List(2, 3, 4))((a, b) => a + b))
+    println(List.hasSubsequence[Int](List(1, 2, 3, 4), List(1, 2)))
+    println(List.hasSubsequence[Int](List(1, 2, 3, 4), List(1)))
+    println(List.hasSubsequence[Int](List(1, 2, 3, 4), List(1, 2, 3, 4)))
+    println(List.hasSubsequence[Int](List(1, 2, 3, 4), List(2, 3)))
+    println(List.hasSubsequence[Int](List(1, 2, 3, 4), List(2, 3, 4, 5)))
   }
 }
