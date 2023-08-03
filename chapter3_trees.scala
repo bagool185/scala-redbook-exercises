@@ -4,9 +4,27 @@ case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
 object Tree {
 
-  def fold[A, B](tree: Tree[A], neutralValue: B)(f: B => A): B =
-    val todo = "TODO dis"
+  def fold[A, B](tree: Tree[A])(leafFn: A => B)(branchFn: (B, B) => B): B = 
+    tree match {
+      case Leaf(value) => leafFn(value)
+      case Branch(left, right) =>
+        val leftFolded = fold(left)(leafFn)(branchFn)
+        val rightFolded = fold(right)(leafFn)(branchFn)
+        branchFn(leftFolded, rightFolded)
+    }
 
+  def sizeUsingFold(tree: Tree[Int]): Int = 
+    fold(tree)(_ => 1)((a, b) => 1 + a + b)
+  
+  def maximumUsingFold(tree: Tree[Int]): Int = 
+    fold(tree)(a => a)((a, b) => if (a > b) a else b)
+  
+  def depthUsingFold[A](tree: Tree[A]): Int = 
+    fold(tree)(_ => 1)((a, b) => if (a > b) a + 1 else b + 1)
+
+  def mapUsingFold[A, B](tree: Tree[A])(f: A => B): Tree[B] =
+    fold[A, Tree[B]](tree)((leafValue) => Leaf(f(leafValue)))((left, right) => Branch(left, right))
+    
   def size[A](tree: Tree[A]): Int =
     tree match {
       case Leaf(_) => 1
@@ -53,8 +71,15 @@ object Chapter3Trees {
 
 
     println(size(muhTree))
+    println(sizeUsingFold(muhTree)) 
+    
     println(maximum(muhTree))
+    println(maximumUsingFold(muhTree))
+    
     println(depth(muhTree))
+    println(depthUsingFold(muhTree))
+    
     println(map(muhTree)(elem => elem * 2))
+    println(mapUsingFold[Int, Int](muhTree)(elem => elem * 2))
   }
 }
